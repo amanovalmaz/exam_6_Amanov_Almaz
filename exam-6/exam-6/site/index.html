@@ -18,26 +18,26 @@ Layout = "layout";
                 </tr>
                 </thead>
                 <tbody class="">
-                @for (int i = 1; i < 12; i++)
+                @foreach (var task in Model.Tasks)
                 {
-                    <tr>
-                        <th>@i</th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th>
-                            <form action="index.html" method="post" class="g-3 row">
-                                <div class="col-5 ml-3">
-                                    <button type="submit" class="btn btn-outline-dark fw-bolder" name="actionIsDone">Выполнить</button>
-                                </div>
-                                <div class="col-5">
-                                    <button type="submit" class="btn btn-outline-dark fw-bolder" name="actionDelete">Удалить</button>
-                                </div>                                
-                            </form>
-                        </th>
-                    </tr>
-                }
+                <tr>
+                    <td>@task.Id</td>
+                    <td>@task.Title</td>
+                    <td>@task.Name</td>
+                    <td>@task.CreateDate</td>
+                    <td>@(task.IsDone ? "done" : "new")</td>
+                    <td>
+                        <form action="index.html" method="post" class="d-inline">
+                            <input type="hidden" name="id" value="@task.Id"/>
+                            <button type="submit" name="action" value="done" class="btn btn-outline-dark">Выполнить</button>
+                        </form>
+                        <form action="index.html" method="post" class="d-inline">
+                            <input type="hidden" name="id" value="@task.Id"/>
+                            <button type="submit" name="action" value="delete" class="btn btn-outline-dark">Удалить</button>
+                        </form>
+                    </td>
+                </tr>
+                }              
                 
             </table>
         </div>
