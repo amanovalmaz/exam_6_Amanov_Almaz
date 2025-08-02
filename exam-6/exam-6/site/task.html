@@ -1,35 +1,37 @@
 @{
 Layout = "layout";
 }
-
-<div class="container mt-3 mx-5 row border border-dark">
-    <h2 class="text-center mb-5">Задача #@Model.Id</h2>
+<h2 class="text-center mt-4">Задача #@Model.Id</h2>
+<div class="container mt-4 mx-5 row border border-dark px-0" >
     
-    <div class="row col-5 border border-dark">
-        <p><b>Исполнитель задачи: </b> @Model.Name</p>
-        <p><b>Дата создания:  </b>  @Model.CreateDate</p>
-        <p><b>Дата выполнения: </b>  @(Model.IsDone ? null : DateTime.Now.ToShortDateString())</p>        
+    <div class="row ">
+        <div class=" col-4 border-end border-dark pt-4 ps-5" >
+            <p><b>Исполнитель задачи: </b> @Model.Name</p>
+            <p><b>Дата создания:  </b>  @Model.CreateDate</p>
+            <p><b>Дата выполнения: </b>  @(Model.IsDone ? DateTime.Now.ToShortDateString() : null)</p>
+
+        </div>
+
+        <div class="col-7 border-start ">
+            <div class="row mx-3  pt-4 pb-5 ps-4">
+                <form action="task.html" method="post" class="d-inline col-3">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" name="action" value="change" class="btn btn-outline-dark">Редактировать</button>
+                </form>
+                <form action="task.html" method="post" class="d-inline col-3">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" name="action" value="done" class="btn btn-outline-dark">Выполнить</button>
+                </form>
+                <form action="task.html" method="post" class="d-inline col-3">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" name="action" value="delete" class="btn btn-outline-dark">Удалить</button>
+                </form>
+            </div>
+            <h4 class="ms-2 px-5">Описание задачи</h4>
+        </div>
         
     </div>
-    
-    <div class="col-7 ">
-        <div class="row mx-3">
-            <form action="task.html" method="post" class="d-inline">
-                <input type="hidden" name="id" value="@Model.Id" />
-                <button type="submit" name="action" value="change" class="btn btn-outline-dark">Редактировать</button>
-            </form>
-            <form action="task.html" method="post" class="d-inline">
-                <input type="hidden" name="id" value="@Model.Id" />
-                <button type="submit" name="action" value="done" class="btn btn-outline-dark">Выполнить</button>
-            </form>
-            <form action="task.html" method="post" class="d-inline">
-                <input type="hidden" name="id" value="@Model.Id" />
-                <button type="submit" name="action" value="delete" class="btn btn-outline-dark">Удалить</button>
-            </form>
-        </div>
-        <h4 class="mt-4 mx-3">Описание задачи</h4>
-    </div>
-    <div class="col-11  mt-5 border border-top-dark">
+    <div class="  mt-0 pt-4 ps-5  border-top border-dark p-3">
         <p>@Model.Description</p>
     </div>
 
