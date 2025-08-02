@@ -10,6 +10,7 @@ public class Server
     private string _siteDirectory;
     private HttpListener _listener;
     private int _port;
+    private TasksDataJson _dataJson = new TasksDataJson();
 
     public async Task RunAsync(string path, int port)
     {
@@ -50,6 +51,78 @@ public class Server
         {
             try
             {
+                if (method == "POST" && filename.Contains("index.html"))
+                {
+                    byte[] bytes = new byte[8 * 1024];
+                    int bytesCount = context.Request.InputStream.Read(bytes);
+                    string request = System.Text.Encoding.UTF8.GetString(bytes, 0, bytesCount);
+                    string[] dataRequest = request.Split("&");
+                    string name = "";
+                    string title = "";
+                    string description = "";
+                    string action = "";
+                    string idStr = "";
+                    foreach (var data in dataRequest)
+                    {
+                        if (data.StartsWith("title="))
+                            title = data.Substring(6);
+                        if (data.StartsWith("name="))
+                            name = data.Substring(5);
+                        if (data.StartsWith("description="))
+                            description = data.Substring(12);
+                        if (data.StartsWith("action="))
+                            action = data.Substring(7);
+                        if (data.StartsWith("id="))
+                            idStr = data.Substring(3);
+                    }
+                    
+                    List<MyTask> tasks = _dataJson.FillTasks();
+                    if (tasks == null)
+                        tasks = new List<MyTask>();
+                    
+                    if (!string.IsNullOrEmpty(action))
+                    {
+                        var task = tasks.FirstOrDefault(t => t.Id == Convert.ToInt32(idStr));
+                        if (task != null)
+                        {
+                            if (action == "done")
+                            {
+                                task.IsDone = true;
+                            }
+                            else if (action == "delete")
+                            {
+                                tasks.Remove(task);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        int newId;
+                        if (tasks.Count > 0)
+                            newId = tasks.Max(t => t.Id) + 1;
+                        else
+                            newId = 1;
+                        MyTask newTask = new MyTask
+                        {
+                            Id = newId,
+                            Title = title,
+                            Name = name,
+                            Description = description,
+                            IsDone = false
+                        };
+                        tasks.Add(newTask);
+                    }
+
+                    _dataJson._tasks = tasks;
+                    _dataJson.SaveTask();
+
+                    
+                }
+                else
+                {
+                    
+                    context.Response.StatusCode = 200;
+                }
 
                 string content = "";
                 if (filename.EndsWith(".html"))
@@ -126,10 +199,15 @@ public class Server
             razorService.AddTemplate(filename, File.ReadAllText(filepath));
             razorService.Compile(filename);
         }
+        
+        List<MyTask> tasks = _dataJson.FillTasks();
+        if (tasks == null)
+        {
+            tasks = new List<MyTask>();
+        }
         html = razorService.Run(filename, null, new
         {
-            
-            
+            Tasks = tasks
         });
         return html;
     }
