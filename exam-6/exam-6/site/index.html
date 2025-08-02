@@ -22,7 +22,10 @@ Layout = "layout";
                 {
                 <tr>
                     <td>@task.Id</td>
-                    <td>@task.Title</td>
+                    <td>
+                        <a href="task.html?id=@task.Id">@task.Title</a>
+                        
+                    </td>
                     <td>@task.Name</td>
                     <td>@task.CreateDate</td>
                     <td>@(task.IsDone ? "done" : "new")</td>

@@ -44,6 +44,7 @@ public class Server
         
         string method = context.Request.HttpMethod;
         string filename = context.Request.Url.AbsolutePath;
+        string query = context.Request.Url.Query; 
         filename = filename.Substring(1);
         filename = "../../../site/" + filename;
         byte[] buffer = new byte[32 * 1024];
@@ -86,13 +87,9 @@ public class Server
                         if (task != null)
                         {
                             if (action == "done")
-                            {
                                 task.IsDone = true;
-                            }
                             else if (action == "delete")
-                            {
                                 tasks.Remove(task);
-                            }
                         }
                     }
                     else
@@ -112,11 +109,41 @@ public class Server
                         };
                         tasks.Add(newTask);
                     }
-
                     _dataJson._tasks = tasks;
                     _dataJson.SaveTask();
-
                     
+                }
+                
+                else if (method == "GET" && filename.Contains("task.html") && !string.IsNullOrEmpty(query))
+                {
+                    string taskIdStr = "";
+                    if (query.StartsWith("?id="))
+                        taskIdStr = query.Substring(4);
+
+                    if (Convert.ToInt32(taskIdStr) > 0)
+                    {
+                        List<MyTask> tasks = _dataJson.FillTasks();
+                        if (tasks == null)
+                            tasks = new List<MyTask>();
+                        
+                        var task = tasks.FirstOrDefault(t => t.Id == Convert.ToInt32(taskIdStr));
+
+                        if (task != null)
+                        {
+                            string contentForGet = BuildTaskHtml(task);
+                            byte[] htmlBytesForGet = System.Text.Encoding.UTF8.GetBytes(contentForGet);
+
+                            context.Response.ContentType = "text/html";
+                            context.Response.ContentLength64 = htmlBytesForGet.Length;
+                            context.Response.OutputStream.Write(htmlBytesForGet, 0, htmlBytesForGet.Length);
+                            context.Response.OutputStream.Close();
+                            return;
+                        }
+                    }
+
+                    context.Response.StatusCode = 404;
+                    context.Response.OutputStream.Close();
+                    return;
                 }
                 else
                 {
@@ -209,6 +236,24 @@ public class Server
         {
             Tasks = tasks
         });
+        return html;
+    }
+    
+    private string BuildTaskHtml(MyTask task)
+    {
+        string layoutPath = "../../../site/layout.html";
+        string taskPath = "../../../site/task.html";
+        var razorService = Engine.Razor;
+
+        if (!razorService.IsTemplateCached("layout", null))
+            razorService.AddTemplate("layout", File.ReadAllText(layoutPath));
+        if (!razorService.IsTemplateCached("task", null))
+        {
+            razorService.AddTemplate("task", File.ReadAllText(taskPath));
+            razorService.Compile("task");
+        }
+
+        string html = razorService.Run("task", null, task);
         return html;
     }
 }
