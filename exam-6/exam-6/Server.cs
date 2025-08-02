@@ -50,7 +50,7 @@ public class Server
         {
             try
             {
-                
+
                 string content = "";
                 if (filename.EndsWith(".html"))
                 {
