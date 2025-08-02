@@ -113,6 +113,47 @@ public class Server
                     _dataJson.SaveTask();
                     
                 }
+                else if (method == "POST" && filename.Contains("task.html"))
+                {
+                    byte[] bytes = new byte[8 * 1024];
+                    int bytesCount = context.Request.InputStream.Read(bytes);
+                    string request = System.Text.Encoding.UTF8.GetString(bytes, 0, bytesCount);
+
+                    string[] dataRequest = request.Split("&");
+                    string action = "";
+                    string idStr = "";
+
+                    foreach (var data in dataRequest)
+                    {
+                        if (data.StartsWith("action="))
+                            action = data.Substring(7);
+                        if (data.StartsWith("id="))
+                            idStr = data.Substring(3);
+                    }
+
+                    List<MyTask> tasks = _dataJson.FillTasks();
+                    if (tasks == null)
+                        tasks = new List<MyTask>();
+
+                    var task = tasks.FirstOrDefault(t => t.Id == Convert.ToInt32(idStr));
+                    if (task != null)
+                    {
+                        if (action == "done")
+                            task.IsDone = true;
+                        if (action == "delete")
+                            tasks.Remove(task);
+                        if (action == "change")
+                        {
+                            
+                        }
+                    }
+
+                    _dataJson._tasks = tasks;
+                    _dataJson.SaveTask();
+                    context.Response.Redirect("index.html");
+                    context.Response.OutputStream.Close();
+                    return;
+                }
                 
                 else if (method == "GET" && filename.Contains("task.html") && !string.IsNullOrEmpty(query))
                 {
